@@ -1,3 +1,7 @@
-svg {
+/*svg {
   background-color: gray;
+}*/
+
+.bar:hover {
+  fill: red;
 }

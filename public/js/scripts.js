@@ -4,7 +4,7 @@ const renderBarChart = data => {
 
 
   console.log(data);
-  const width = 900;
+  const width = 1000;
   const height = 500;
   const padding = 20;
   const margin = { top: 20, right: 20, bottom: 40, left: 40 };
@@ -34,14 +34,34 @@ const renderBarChart = data => {
     .data(data)
     .enter()
     .append('rect')
+    .attr('class', 'bar')
     .attr('height', (d) => yScale(d[1]) - margin.bottom)
     .attr('x', (d, i) => xScale(d[0]))
     .attr('y', (d) => height - yScale(d[1]))
     .attr('fill', 'blue')
     .attr('width', barWidth)
+    .attr('data-date', (d) => d[0])
+    .attr('data-gbp', (d) => d[1])
+
+
+  const tickValues = xScale.domain().filter((element, i) => !(i % 20));
+
+  const xAxis = d3.axisBottom(xScale)
+    .tickValues(tickValues)
+
+  const yAxis = d3.axisLeft(yScale);
+
+
+  svg.append('g')
+    .attr('transform', `translate(0, ${height - margin.bottom})`)
+    .call(xAxis)
+
+  svg.append('g')
+    .attr('tranform', 'translate(100, 400)')
+    .call(yAxis);
+
+  // tickArr.filter((e) => e !== undefined)
 
 };
 
 $.getJSON('https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json', (data) => renderBarChart(data.data));
-const data = [[146, 'a'], [255, 'b'], [440, 'c'], [95, 'd'], [74, 'e']];
-// renderBarChart(data);
