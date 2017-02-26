@@ -2,14 +2,7 @@
 
 const renderBarChart = data => {
 
-  console.log(typeof data[0][0])
-
-
-  function parseAndFormat(date) {
-    const parsed = d3.timeParse('%Y-%m-%d')(date)
-    return formatted = d3.timeFormat('%Y')(parsed);
-  }
-
+  // set up svg and bar dimensions/margins
   const width = 1000;
   const height = 500;
   const padding = 20;
@@ -19,12 +12,14 @@ const renderBarChart = data => {
   const barWidthPadding = barWidth * 0.5;
   barWidth = barWidth - barWidthPadding;
 
-  const dataMax = d3.max(data, (d) => d[1]);
+  // append svg to DOM
+  const svg = d3.select('.svg-container')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
 
-  const svg = d3.select('.container')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
+  // set up x and y scales
+  const dataMax = d3.max(data, (d) => d[1]);
 
   const xScale = d3.scaleBand()
     .domain(data.map((d) => d[0]))
@@ -35,14 +30,13 @@ const renderBarChart = data => {
     .domain([0, dataMax])
     .range([height - margin.bottom, margin.top])
 
+  // append tooltip div to body
   const tooltip = d3.select('body').append('div')
     .attr('id', 'tooltip')
     .style('position', 'absolute')
     .style('opacity', 0)
 
-
-    // .attr('transform', `translate(${xLabelPosition}, ${height - (margin.bottom / 1.5)})`)
-
+  // dynamically set up rect for each data point
   const bars = svg.selectAll('rect')
     .data(data)
     .enter()
@@ -54,11 +48,13 @@ const renderBarChart = data => {
     .attr('fill', 'blue')
     .attr('width', barWidth)
     .attr('data-date', (d) => d[0])
-    .attr('data-gbp', (d) => d[1])
+    .attr('data-gdp', (d) => d[1])
     .on('mouseover', (d) => {
+      // show tooltip when user hovers over bar and dynamically allocate attributes
       tooltip
-      .style('left', `${xScale(d[0]) - (margin.left / 2)}px`)
-      .style('top', `${yScale(d[1]) - margin.bottom}px`)
+      .attr('data-date', d[0])
+      .style('left', `${xScale(d[0]) + 80}px`)
+      .style('top', `${yScale(d[1]) + 70}px`)
       .html(`<span class="title">Quarter:</span> ${d[0]} <br> <span class="title">GDP:</span> $${d[1]} bn`)
       .transition()
       .duration(200)
@@ -70,17 +66,20 @@ const renderBarChart = data => {
         .style("opacity", 0)
     })
 
+  // filter data to space out x axis tick points - 1 per data point is too many
   const tickValues = xScale.domain().filter((d, i) => !(i % 20));
-  const mapped = tickValues.map((d) => parseAndFormat(d));
-  console.log(mapped);
 
+  // set up x and y axes
   const xAxis = d3.axisBottom(xScale)
     .tickValues(tickValues)
 
   const yAxis = d3.axisLeft(yScale);
-  const yLabelPosition = height / 2 - margin.bottom;
-  const xLabelPosition = width / 2 + margin.left;
 
+  // calculate x and y positions for axis labels
+  const xLabelPosition = width / 2 + margin.left;
+  const yLabelPosition = height / 2 - margin.bottom;
+
+  // append axes to svg
   svg.append('g')
     .attr('id', 'x-axis')
     .attr('transform', `translate(0, ${height - margin.bottom})`)
@@ -91,20 +90,25 @@ const renderBarChart = data => {
     .attr('transform', `translate(${margin.left}, 0)`)
     .attr('id', 'y-axis')
 
+  // append labels to svg
   svg.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('dx', '-7.5em')
     .attr('dy', '1.5em')
-    .text('GDP (USD Billions)')
+    .text('GDP (Billion USD)')
     .attr('x', `${-yLabelPosition}`)
 
   svg.append('text')
     .attr('dx', '-7.5em')
     .attr('dy', '1.5em')
     .text('Financial Quarter')
-    // .attr('x', `${xLabelPosition}`)
-    // .attr('y', ``)
     .attr('transform', `translate(${xLabelPosition}, ${height - (margin.bottom / 1.5)})`)
+
+  // function for parsing and formatting dates in data - didn't use in the end
+  function parseAndFormat(date) {
+    const parsed = d3.timeParse('%Y-%m-%d')(date)
+    return formatted = d3.timeFormat('%Y')(parsed);
+  }
 
 };
 
