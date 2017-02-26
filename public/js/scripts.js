@@ -13,7 +13,7 @@ const renderBarChart = data => {
   const width = 1000;
   const height = 500;
   const padding = 20;
-  const margin = { top: 20, right: 20, bottom: 80, left: 80 };
+  const margin = { top: 40, right: 20, bottom: 80, left: 80 };
 
   let barWidth = width / data.length;
   const barWidthPadding = barWidth * 0.5;
@@ -35,6 +35,13 @@ const renderBarChart = data => {
     .domain([0, dataMax])
     .range([height - margin.bottom, margin.top])
 
+  const tooltip = d3.select('body').append('div')
+    .attr('id', 'tooltip')
+    .style('position', 'absolute')
+    .style('opacity', 0)
+
+
+    // .attr('transform', `translate(${xLabelPosition}, ${height - (margin.bottom / 1.5)})`)
 
   const bars = svg.selectAll('rect')
     .data(data)
@@ -48,14 +55,20 @@ const renderBarChart = data => {
     .attr('width', barWidth)
     .attr('data-date', (d) => d[0])
     .attr('data-gbp', (d) => d[1])
-
-  const tooltip = bars.append('text')
-    .text(`Year: ${(d) => d[0]}\n GDP: ${(d) => d[1]}`)
-    .attr('height', 100)
-    .attr('width', 100)
-    .attr('x', 100)
-    .attr('y', 100)
-
+    .on('mouseover', (d) => {
+      tooltip
+      .style('left', `${xScale(d[0]) - (margin.left / 2)}px`)
+      .style('top', `${yScale(d[1]) - margin.bottom}px`)
+      .html(`<span class="title">Quarter:</span> ${d[0]} <br> <span class="title">GDP:</span> $${d[1]} bn`)
+      .transition()
+      .duration(200)
+      .style('opacity', .9)
+    })
+    .on("mouseout", (d) => {
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0)
+    })
 
   const tickValues = xScale.domain().filter((d, i) => !(i % 20));
   const mapped = tickValues.map((d) => parseAndFormat(d));
@@ -65,8 +78,8 @@ const renderBarChart = data => {
     .tickValues(tickValues)
 
   const yAxis = d3.axisLeft(yScale);
-  const yLabelPosition = (height - margin.top - margin.bottom)/ 2;
-  const xLabelPosition = (width ) / 2;
+  const yLabelPosition = height / 2 - margin.bottom;
+  const xLabelPosition = width / 2 + margin.left;
 
   svg.append('g')
     .attr('id', 'x-axis')
@@ -82,13 +95,13 @@ const renderBarChart = data => {
     .attr('transform', 'rotate(-90)')
     .attr('dx', '-7.5em')
     .attr('dy', '1.5em')
-    .text('USD (Billions)')
+    .text('GDP (USD Billions)')
     .attr('x', `${-yLabelPosition}`)
 
   svg.append('text')
     .attr('dx', '-7.5em')
     .attr('dy', '1.5em')
-    .text('Year')
+    .text('Financial Quarter')
     // .attr('x', `${xLabelPosition}`)
     // .attr('y', ``)
     .attr('transform', `translate(${xLabelPosition}, ${height - (margin.bottom / 1.5)})`)

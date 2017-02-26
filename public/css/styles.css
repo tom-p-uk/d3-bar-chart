@@ -5,3 +5,15 @@
 .bar:hover {
   fill: red;
 }
+
+.title {
+  color: white;
+}
+
+#tooltip {
+  background-color: #2f2f30;
+  text-align: center;
+  color: red;
+  padding: 5px;
+  /*border-radius: 1*/
+}
